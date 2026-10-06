@@ -30,3 +30,16 @@ GROUP BY
   e.employee_name, 
   e.title
 ORDER BY revenue_by_employee DESC;
+
+-- 3. Sales geography
+SELECT
+  c.country,
+  ROUND(SUM(od.unit_price * od.quantity * (1 - od.discount))::numeric, 2) AS revenue,
+  COUNT(DISTINCT c.customer_id) AS unique_customers
+FROM orders o
+LEFT JOIN order_details od
+ON o.order_id = od.order_id
+LEFT JOIN customers c
+ON o.customer_id = c.customer_id
+GROUP BY c.country
+ORDER BY revenue DESC;
