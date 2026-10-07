@@ -11,3 +11,31 @@ ON o.shipper_id = s.shipper_id
 WHERE o.shipped_date IS NOT NULL
 GROUP BY s.shipper_id, s.company_name
 ORDER BY orders_by_company DESC;
+
+-- 2. Churn and inactive customers
+-- 2.1. Passive customers (zero-orders)
+WITH customer_orders AS (
+  SELECT
+    c.customer_id,
+    c.company_name,
+    c.country,
+    COUNT(o.order_id) AS orders_by_customer
+  FROM customers c
+  LEFT JOIN orders o
+  ON c.customer_id = o.customer_id
+  GROUP BY 
+    c.customer_id, 
+    c.company_name, 
+    c.country
+)
+SELECT
+  customer_id,
+  company_name,
+  country,
+  CASE
+    WHEN orders_by_customer = 0 THEN 'Passive customer (zero-orders)'
+    WHEN orders_by_customer = 1 THEN 'One-time customer (1 order)'
+    ELSE 'Regular customer'
+  END AS customer_segment
+FROM customer_orders
+ORDER BY orders_by_customer DESC;
