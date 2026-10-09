@@ -33,3 +33,35 @@ SELECT
 FROM product_ranking
 WHERE product_rank IN(1, 2)
 ORDER BY category_name, product_rank, product_name;
+
+-- 3. Days between repeat purchases
+WITH orders_with_lag AS (
+  SELECT
+    customer_id,
+    order_id,
+    order_date,
+    LAG(order_date) OVER(PARTITION BY customer_id ORDER BY order_date, order_id) AS previous_order_date
+  FROM orders
+),
+order_intervals AS (
+  SELECT
+    customer_id,
+    order_id,
+    order_date,
+    previous_order_date,
+    (order_date - previous_order_date) AS days_since_last_order
+  FROM orders_with_lag
+  WHERE previous_order_date IS NOT NULL
+)
+SELECT
+  c.customer_id,
+  c.company_name,
+  COUNT(oi.order_id) + 1 AS total_orders,
+  ROUND(AVG(oi.days_since_last_order), 1) AS avg_days_between_orders,
+  MIN(oi.days_since_last_order) AS min_days_between_orders,
+  MAX(oi.days_since_last_order) AS max_days_between_orders
+FROM order_intervals oi
+JOIN customers c
+ON oi.customer_id = c.customer_id
+GROUP BY c.customer_id, c.company_name
+ORDER BY avg_days_between_orders ASC;
