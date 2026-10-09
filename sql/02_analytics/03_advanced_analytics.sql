@@ -14,3 +14,22 @@ SELECT
   SUM(monthly_revenue) OVER(ORDER BY order_month ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total_revenue
 FROM monthly_revenue
 ORDER BY order_month;
+
+-- 2. Top-2 most expensive products per category
+WITH product_ranking AS (
+  SELECT
+    p.product_id,
+    c.category_id,
+    c.category_name,
+    p.product_name,
+    p.unit_price,
+    DENSE_RANK() OVER(PARTITION BY p.category_id ORDER BY p.unit_price DESC) AS product_rank
+  FROM products p
+  JOIN categories c
+  ON p.category_id = c.category_id
+)
+SELECT
+  *
+FROM product_ranking
+WHERE product_rank IN(1, 2)
+ORDER BY category_name, product_rank, product_name;
