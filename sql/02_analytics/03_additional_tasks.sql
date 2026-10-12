@@ -1,8 +1,9 @@
 -- 1. Orders from 2015
 SELECT
-  order_id,
-  company_name,
-
+  o.order_id,
+  c.company_name,
+  e.employee_name,
+  o.order_date
 FROM orders o
 JOIN customers c
 ON o.customer_id = c.customer_id
