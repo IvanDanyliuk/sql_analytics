@@ -43,3 +43,37 @@ SELECT
   unit_price
 FROM ranked_products
 WHERE product_rank = 1;
+
+-- 4. Average freight price
+SELECT
+  s.shipper_id,
+  s.company_name,
+  ROUND(AVG(o.freight)::numeric, 2) AS avg_freight_price
+FROM orders o
+JOIN shippers s
+ON o.shipper_id = s.shipper_id
+GROUP BY s.shipper_id, s.company_name
+ORDER BY avg_freight_price DESC;
+
+-- 5. Popular categories
+SELECT
+  c.category_id,
+  c.category_name,
+  COUNT(p.product_id) AS product_number
+FROM categories c
+JOIN products p
+ON c.category_id = p.category_id
+GROUP BY c.category_id, c.category_name
+HAVING COUNT(p.product_id) > 8
+ORDER BY product_number DESC;
+
+-- 6. Products that are more expensive than the average market price
+SELECT
+  product_id,
+  product_name,
+  unit_price
+FROM products
+WHERE unit_price > (
+  SELECT AVG(unit_price) FROM products
+)
+ORDER BY unit_price DESC;
